@@ -50,4 +50,10 @@ PRALINE_EXPORT void writeToStandardError(const std::wstring_view string, const b
 
 PRALINE_EXPORT const char* getFileName(const char* filePath);
 
+PRALINE_EXPORT std::wstring toWideString(const char* const string);
+
+PRALINE_EXPORT std::wstring toWideString(const std::string& string);
+
+PRALINE_EXPORT std::wstring toWideString(std::wstring string);
+
 }
