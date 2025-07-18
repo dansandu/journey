@@ -7,7 +7,7 @@
 #include <memory>
 #include <source_location>
 
-namespace dansandu::journey::logger
+namespace dansandu::journey::logging
 {
 
 class PRALINE_EXPORT Logger
