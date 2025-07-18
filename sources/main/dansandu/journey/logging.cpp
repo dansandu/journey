@@ -1,4 +1,4 @@
-#include "dansandu/journey/logger.hpp"
+#include "dansandu/journey/logging.hpp"
 #include "dansandu/journey/utility.hpp"
 
 #include <algorithm>
@@ -15,7 +15,7 @@
 using dansandu::journey::utility::getFileName;
 using dansandu::journey::utility::getLocalDateTime;
 
-namespace dansandu::journey::logger
+namespace dansandu::journey::logging
 {
 
 struct Reporter
