@@ -5,7 +5,6 @@
 
 #include <functional>
 #include <memory>
-#include <source_location>
 
 namespace dansandu::journey::logging
 {
@@ -33,8 +32,8 @@ public:
 
     const std::wstring& getName() const;
 
-    void log(const Level level, const std::wstring_view message,
-             const std::source_location location = std::source_location::current());
+    void log(const Level level, const char* const function, const char* const file, const int line, const int column,
+             const std::wstring_view message);
 
 private:
     void log(const LogEntry& logEntry);
@@ -42,69 +41,29 @@ private:
     std::shared_ptr<void> implementation_;
 };
 
-template<typename... Arguments>
-struct LogCritical
-{
-    explicit LogCritical(const Arguments&... arguments,
-                         const std::source_location location = std::source_location::current())
-    {
-        Logger::globalInstance().log(Level::critical, dansandu::journey::utility::wformat(arguments...), location);
-    }
-};
-
-template<typename... Arguments>
-LogCritical(const Arguments&...) -> LogCritical<Arguments...>;
-
-template<typename... Arguments>
-struct LogError
-{
-    explicit LogError(const Arguments&... arguments,
-                      const std::source_location location = std::source_location::current())
-    {
-        Logger::globalInstance().log(Level::error, dansandu::journey::utility::wformat(arguments...), location);
-    }
-};
-
-template<typename... Arguments>
-LogError(const Arguments&...) -> LogError<Arguments...>;
-
-template<typename... Arguments>
-struct LogWarning
-{
-    explicit LogWarning(const Arguments&... arguments,
-                        const std::source_location location = std::source_location::current())
-    {
-        Logger::globalInstance().log(Level::warning, dansandu::journey::utility::wformat(arguments...), location);
-    }
-};
-
-template<typename... Arguments>
-LogWarning(const Arguments&...) -> LogWarning<Arguments...>;
-
-template<typename... Arguments>
-struct LogInfo
-{
-    explicit LogInfo(const Arguments&... arguments,
-                     const std::source_location location = std::source_location::current())
-    {
-        Logger::globalInstance().log(Level::info, dansandu::journey::utility::wformat(arguments...), location);
-    }
-};
-
-template<typename... Arguments>
-LogInfo(const Arguments&...) -> LogInfo<Arguments...>;
-
-template<typename... Arguments>
-struct LogDebug
-{
-    explicit LogDebug(const Arguments&... arguments,
-                      const std::source_location location = std::source_location::current())
-    {
-        Logger::globalInstance().log(Level::debug, dansandu::journey::utility::wformat(arguments...), location);
-    }
-};
-
-template<typename... Arguments>
-LogDebug(const Arguments&...) -> LogDebug<Arguments...>;
-
 }
+
+#define LOG_CRITICAL(...)                                                                                              \
+    dansandu::journey::logging::Logger::globalInstance().log(dansandu::journey::Level::critical, __func__, __FILE__,   \
+                                                             __LINE__, 0,                                              \
+                                                             dansandu::journey::utility::wformat(__VA_ARGS__));
+
+#define LOG_ERROR(...)                                                                                                 \
+    dansandu::journey::logging::Logger::globalInstance().log(dansandu::journey::Level::error, __func__, __FILE__,      \
+                                                             __LINE__, 0,                                              \
+                                                             dansandu::journey::utility::wformat(__VA_ARGS__));
+
+#define LOG_WARNING(...)                                                                                               \
+    dansandu::journey::logging::Logger::globalInstance().log(dansandu::journey::Level::warning, __func__, __FILE__,    \
+                                                             __LINE__, 0,                                              \
+                                                             dansandu::journey::utility::wformat(__VA_ARGS__));
+
+#define LOG_INFO(...)                                                                                                  \
+    dansandu::journey::logging::Logger::globalInstance().log(dansandu::journey::Level::info, __func__, __FILE__,       \
+                                                             __LINE__, 0,                                              \
+                                                             dansandu::journey::utility::wformat(__VA_ARGS__));
+
+#define LOG_DEBUG(...)                                                                                                 \
+    dansandu::journey::logging::Logger::globalInstance().log(dansandu::journey::Level::debug, __func__, __FILE__,      \
+                                                             __LINE__, 0,                                              \
+                                                             dansandu::journey::utility::wformat(__VA_ARGS__));
