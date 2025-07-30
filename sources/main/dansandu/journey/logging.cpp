@@ -146,9 +146,10 @@ const std::wstring& Logger::getName() const
     return impl->name;
 }
 
-void Logger::log(const Level level, const std::wstring_view message, const std::source_location location)
+void Logger::log(const Level level, const char* const function, const char* const file, const int line,
+                 const int column, const std::wstring_view message)
 {
-    const auto fileName = getFileName(location.file_name());
+    const auto fileName = getFileName(file);
 
     const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
 
@@ -162,10 +163,10 @@ void Logger::log(const Level level, const std::wstring_view message, const std::
     if (level != Level::none && level <= impl->level)
     {
         const auto logEntry = LogEntry{.level = level,
-                                       .function = location.function_name(),
+                                       .function = function,
                                        .file = fileName,
-                                       .line = static_cast<int>(location.line()),
-                                       .column = static_cast<int>(location.column()),
+                                       .line = line,
+                                       .column = column,
                                        .threadId = std::this_thread::get_id(),
                                        .timestamp = getLocalDateTime(),
                                        .message = message};
