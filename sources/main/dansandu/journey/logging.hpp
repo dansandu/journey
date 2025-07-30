@@ -5,7 +5,6 @@
 
 #include <functional>
 #include <memory>
-#include <source_location>
 
 namespace dansandu::journey::logging
 {
