@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 
+using dansandu::journey::utility::getFileName;
 using dansandu::journey::utility::wformat;
 using dansandu::journey::utility::writeToStandardError;
 using dansandu::journey::utility::writeToStandardOutput;
@@ -17,7 +18,7 @@ void standardOutputLogReporter(const LogEntry& logEntry)
 {
     const auto message =
         wformat(logEntry.timestamp, ' ', toStringWithConsoleHighlight(logEntry.level), ' ', logEntry.threadId, ' ',
-                logEntry.file, '(', logEntry.line, ") ", logEntry.message, '\n');
+                getFileName(logEntry.relativeFilePath), '(', logEntry.line, ") ", logEntry.message, '\n');
 
     const auto flush = true;
 
@@ -50,7 +51,7 @@ LogFileReporter::LogFileReporter(const char* const filePath)
 void LogFileReporter::operator()(const LogEntry& logEntry) const
 {
     const auto message = wformat(logEntry.timestamp, ' ', toString(logEntry.level), ' ', logEntry.threadId, ' ',
-                                 logEntry.file, '(', logEntry.line, ") ", logEntry.message, '\n');
+                                 logEntry.relativeFilePath, '(', logEntry.line, ") ", logEntry.message, '\n');
 
     const auto impl = static_cast<LogFileReporterImplementation*>(implementation_.get());
 

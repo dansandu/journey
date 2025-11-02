@@ -48,12 +48,19 @@ PRALINE_EXPORT void writeToStandardError(const std::string_view string, const bo
 
 PRALINE_EXPORT void writeToStandardError(const std::wstring_view string, const bool flush = false);
 
-PRALINE_EXPORT const char* getFileName(const char* filePath);
-
 PRALINE_EXPORT std::wstring toWideString(const char* const string);
 
 PRALINE_EXPORT std::wstring toWideString(const std::string& string);
 
 PRALINE_EXPORT std::wstring toWideString(std::wstring string);
+
+PRALINE_EXPORT std::string getFileName(const std::string_view path);
+
+PRALINE_EXPORT bool isSubpath(const std::string_view path, const std::string_view rootPath);
+
+PRALINE_EXPORT bool tryGetRelativePath(const std::string_view path, const std::string_view rootPath,
+                                       std::string& relativePath);
+
+PRALINE_EXPORT std::string replaceBackSlashes(const std::string_view path);
 
 }

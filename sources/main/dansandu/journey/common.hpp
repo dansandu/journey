@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <thread>
 
 namespace dansandu::journey
@@ -10,23 +9,23 @@ namespace dansandu::journey
 enum class Level
 {
     none,
-    critical,
-    error,
-    warning,
+    debug,
     info,
-    debug
+    warning,
+    error,
+    critical,
 };
 
 struct LogEntry
 {
     Level level;
     const char* function;
-    const char* file;
     int line;
     int column;
     std::thread::id threadId;
+    std::string relativeFilePath;
     std::string timestamp;
-    std::wstring_view message;
+    std::wstring message;
 };
 
 PRALINE_EXPORT const char* toString(const Level level);

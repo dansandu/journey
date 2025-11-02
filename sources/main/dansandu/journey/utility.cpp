@@ -69,21 +69,6 @@ void writeToStandardError(const std::wstring_view string, const bool flush)
     }
 }
 
-const char* getFileName(const char* filePath)
-{
-    if (!filePath)
-    {
-        return filePath;
-    }
-
-    auto fileName = filePath + std::strlen(filePath);
-    while (fileName != filePath && *(fileName - 1) != '\\' && *(fileName - 1) != '/')
-    {
-        --fileName;
-    }
-    return fileName;
-}
-
 std::wstring toWideString(const char* const string)
 {
     auto stream = std::wostringstream{};
@@ -99,6 +84,111 @@ std::wstring toWideString(const std::string& string)
 std::wstring toWideString(std::wstring string)
 {
     return string;
+}
+
+namespace
+{
+
+auto isSlash(const char c)
+{
+    return static_cast<bool>((c == '/') | (c == '\\'));
+}
+
+auto getCommonPathEndIndex(const std::string_view path, const std::string_view rootPath)
+{
+    auto pathPosition = path.cbegin();
+    auto rootPosition = rootPath.cbegin();
+
+    const auto areEqual = [](const char a, const char b)
+    { return static_cast<bool>((a == b) | (isSlash(a) & isSlash(b))); };
+
+    while (pathPosition != path.cend() && rootPosition != rootPath.cend() && areEqual(*pathPosition, *rootPosition))
+    {
+        ++pathPosition;
+        ++rootPosition;
+    }
+
+    return pathPosition - path.cbegin();
+}
+
+bool tryGetRelativePathBeginIndex(const std::string_view path, const std::string_view rootPath, size_t& index)
+{
+    index = getCommonPathEndIndex(path, rootPath);
+
+    if (rootPath.empty())
+    {
+        return true;
+    }
+
+    const auto rootPathEndsWithSlash = isSlash(rootPath.back());
+
+    if (index == rootPath.size())
+    {
+        if (rootPathEndsWithSlash || index == path.size())
+        {
+            return true;
+        }
+        else if (index < path.size() && isSlash(path[index]))
+        {
+            ++index;
+            return true;
+        }
+    }
+    else if (index + 1 == rootPath.size() && rootPathEndsWithSlash && index == path.size())
+    {
+        return true;
+    }
+
+    return false;
+}
+
+}
+
+std::string getFileName(const std::string_view path)
+{
+    auto position = path.cbegin() + path.size();
+
+    while (position != path.cbegin() && !isSlash(*(position - 1)))
+    {
+        --position;
+    }
+
+    return std::string{position, path.cend()};
+}
+
+bool isSubpath(const std::string_view path, const std::string_view rootPath)
+{
+    auto index = size_t{};
+
+    return tryGetRelativePathBeginIndex(path, rootPath, index);
+}
+
+bool tryGetRelativePath(const std::string_view path, const std::string_view rootPath, std::string& relativePath)
+{
+    auto index = size_t{};
+
+    if (tryGetRelativePathBeginIndex(path, rootPath, index))
+    {
+        relativePath = std::string{path.cbegin() + index, path.cend()};
+        return true;
+    }
+
+    return false;
+}
+
+std::string replaceBackSlashes(const std::string_view path)
+{
+    auto result = static_cast<std::string>(path);
+
+    for (auto& character : result)
+    {
+        if (character == '\\')
+        {
+            character = '/';
+        }
+    }
+
+    return result;
 }
 
 }
