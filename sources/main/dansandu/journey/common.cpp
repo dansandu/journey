@@ -33,9 +33,9 @@ const char* toStringWithConsoleHighlight(const Level level)
     case Level::none:
         return "NONE";
     case Level::debug:
-        return "\x1B[35mDEBUG\x1B[0m";
+        return "\x1B[34mDEBUG\x1B[0m";
     case Level::info:
-        return "\x1B[34mINFO\x1B[0m";
+        return "\x1B[32mINFO\x1B[0m";
     case Level::warning:
         return "\x1B[33mWARNING\x1B[0m";
     case Level::error:
