@@ -6,25 +6,22 @@
 namespace dansandu::journey::exception
 {
 
-class Exception : public std::exception
+class WideException : public std::exception
 {
 public:
-    Exception()
+    explicit WideException(const std::wstring& message)
+        : exception{"This is a wide string exception -- call getMessage() for the actual message"}, message_{message}
     {
     }
 
-    explicit Exception(const std::wstring& message) : message_{message}
-    {
-    }
-
-    virtual const std::wstring& message() const noexcept
+    virtual const std::wstring& getMessage() const noexcept
     {
         return message_;
     }
 
-    const char* what() const noexcept override
+    const char* what() const noexcept override final
     {
-        return "This is a wide string exception -- call message() for the actual message";
+        return exception::what();
     }
 
 private:

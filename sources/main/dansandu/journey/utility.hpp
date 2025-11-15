@@ -19,7 +19,7 @@ template<typename... Arguments>
 auto wformat(const Arguments&... arguments)
 {
     auto stream = std::wostringstream{};
-    auto streamWriter = [&stream]<typename T>(const T& argument)
+    auto streamWriter = [&]<typename T>(const T& argument)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
         {
@@ -27,7 +27,8 @@ auto wformat(const Arguments&... arguments)
         }
         else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
         {
-            stream.write(argument.begin(), argument.end() - argument.begin());
+            const auto string = static_cast<std::string>(argument);
+            stream << string.c_str();
         }
         else
         {

@@ -20,21 +20,26 @@ void standardOutputLogReporter(const LogEntry& logEntry)
         wformat(logEntry.timestamp, ' ', toStringWithConsoleHighlight(logEntry.level), ' ', logEntry.threadId, ' ',
                 getFileName(logEntry.relativeFilePath), '(', logEntry.line, ") ", logEntry.message, '\n');
 
+    if (logEntry.level == Level::none)
+    {
+        return;
+    }
+
     const auto flush = true;
 
-    if (logEntry.level < Level::warning)
+    if (logEntry.level <= Level::warning)
     {
-        writeToStandardError(message, flush);
+        writeToStandardOutput(message, flush);
     }
     else
     {
-        writeToStandardOutput(message, flush);
+        writeToStandardError(message, flush);
     }
 }
 
 struct LogFileReporterImplementation
 {
-    explicit LogFileReporterImplementation(const char* const filePath)
+    explicit LogFileReporterImplementation(const std::string& filePath)
         : logFile{filePath, std::ios_base::out | std::ios_base::app}
     {
     }
@@ -43,13 +48,28 @@ struct LogFileReporterImplementation
     std::mutex mutex;
 };
 
-LogFileReporter::LogFileReporter(const char* const filePath)
+LogFileReporter::LogFileReporter(const std::string& filePath)
     : implementation_{std::make_shared<LogFileReporterImplementation>(filePath)}
 {
 }
 
+LogFileReporter::LogFileReporter(LogFileReporter&& other) noexcept : implementation_{other.implementation_}
+{
+}
+
+LogFileReporter& LogFileReporter::operator=(LogFileReporter&& other) noexcept
+{
+    implementation_ = other.implementation_;
+    return *this;
+}
+
 void LogFileReporter::operator()(const LogEntry& logEntry) const
 {
+    if (logEntry.level == Level::none)
+    {
+        return;
+    }
+
     const auto message = wformat(logEntry.timestamp, ' ', toString(logEntry.level), ' ', logEntry.threadId, ' ',
                                  logEntry.relativeFilePath, '(', logEntry.line, ") ", logEntry.message, '\n');
 
