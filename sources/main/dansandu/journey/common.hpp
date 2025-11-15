@@ -19,12 +19,12 @@ enum class Level
 struct LogEntry
 {
     Level level;
-    const char* function;
     int line;
     int column;
     std::thread::id threadId;
-    std::string relativeFilePath;
     std::string timestamp;
+    std::string relativeFilePath;
+    std::string function;
     std::wstring message;
 };
 
