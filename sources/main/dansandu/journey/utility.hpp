@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -63,5 +64,7 @@ PRALINE_EXPORT bool tryGetRelativePath(const std::string_view path, const std::s
                                        std::string& relativePath);
 
 PRALINE_EXPORT std::string replaceBackSlashes(const std::string_view path);
+
+PRALINE_EXPORT std::optional<std::string> getEnvironmentVariable(const std::string& variable);
 
 }
