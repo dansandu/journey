@@ -2,7 +2,9 @@
 
 #include <ctime>
 #include <iostream>
+#include <memory>
 #include <mutex>
+#include <optional>
 #include <sstream>
 
 namespace dansandu::journey::utility
@@ -17,10 +19,12 @@ std::string getLocalDateTime()
 
     auto timeOutput = tm{};
 
-#ifdef _WIN32
+#if defined(_WIN32)
     localtime_s(&timeOutput, &timeInput);
+#elif defined(__linux__)
+    localtime_r(&timeInput, &timeOutput);
 #else
-    localtime_s(&timeInput, &timeOutput);
+#error "Unknown platform"
 #endif
 
     char buffer[64];
@@ -189,6 +193,37 @@ std::string replaceBackSlashes(const std::string_view path)
     }
 
     return result;
+}
+
+std::optional<std::string> getEnvironmentVariable(const std::string& variable)
+{
+#if defined(_WIN32)
+    size_t requiredSize;
+
+    getenv_s(&requiredSize, nullptr, 0, variable.c_str());
+    if (requiredSize == 0)
+    {
+        return {};
+    }
+
+    const auto value = std::make_unique<char[]>(requiredSize);
+
+    getenv_s(&requiredSize, value.get(), requiredSize, variable.c_str());
+
+    return std::optional<std::string>{std::in_place, value.get()};
+#elif defined(__linux__)
+    const auto value = std::getenv(variable.c_str());
+    if (value)
+    {
+        return std::optional<std::string>{std::in_place, value};
+    }
+    else
+    {
+        return {};
+    }
+#else
+#error "Unknown platform"
+#endif
 }
 
 }
