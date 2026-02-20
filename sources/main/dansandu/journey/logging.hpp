@@ -58,31 +58,16 @@ private:
 }
 
 #define LOG(level, ...)                                                                                                \
-    dansandu::journey::logging::Logger::getGlobalInstance().log(level, __func__, __FILE__, __LINE__, 0,                \
-                                                                PRALINE_SOURCES_ROOT,                                  \
-                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+    ::dansandu::journey::logging::Logger::getGlobalInstance().log(level, __func__, __FILE__, __LINE__, 0,              \
+                                                                  PRALINE_SOURCES_ROOT,                                \
+                                                                  ::dansandu::journey::utility::wformat(__VA_ARGS__))
 
-#define LOG_DEBUG(...)                                                                                                 \
-    dansandu::journey::logging::Logger::getGlobalInstance().log(dansandu::journey::Level::debug, __func__, __FILE__,   \
-                                                                __LINE__, 0, PRALINE_SOURCES_ROOT,                     \
-                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+#define LOG_DEBUG(...) LOG(::dansandu::journey::Level::debug, __VA_ARGS__)
 
-#define LOG_INFO(...)                                                                                                  \
-    dansandu::journey::logging::Logger::getGlobalInstance().log(dansandu::journey::Level::info, __func__, __FILE__,    \
-                                                                __LINE__, 0, PRALINE_SOURCES_ROOT,                     \
-                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+#define LOG_INFO(...) LOG(::dansandu::journey::Level::info, __VA_ARGS__)
 
-#define LOG_WARNING(...)                                                                                               \
-    dansandu::journey::logging::Logger::getGlobalInstance().log(dansandu::journey::Level::warning, __func__, __FILE__, \
-                                                                __LINE__, 0, PRALINE_SOURCES_ROOT,                     \
-                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+#define LOG_WARNING(...) LOG(::dansandu::journey::Level::warning, __VA_ARGS__)
 
-#define LOG_ERROR(...)                                                                                                 \
-    dansandu::journey::logging::Logger::getGlobalInstance().log(dansandu::journey::Level::error, __func__, __FILE__,   \
-                                                                __LINE__, 0, PRALINE_SOURCES_ROOT,                     \
-                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+#define LOG_ERROR(...) LOG(::dansandu::journey::Level::error, __VA_ARGS__)
 
-#define LOG_CRITICAL(...)                                                                                              \
-    dansandu::journey::logging::Logger::getGlobalInstance().log(dansandu::journey::Level::critical, __func__,          \
-                                                                __FILE__, __LINE__, 0, PRALINE_SOURCES_ROOT,           \
-                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+#define LOG_CRITICAL(...) LOG(::dansandu::journey::Level::critical, __VA_ARGS__)
