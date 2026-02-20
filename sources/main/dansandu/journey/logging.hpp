@@ -57,6 +57,11 @@ private:
 
 }
 
+#define LOG(level, ...)                                                                                                \
+    dansandu::journey::logging::Logger::getGlobalInstance().log(level, __func__, __FILE__, __LINE__, 0,                \
+                                                                PRALINE_SOURCES_ROOT,                                  \
+                                                                dansandu::journey::utility::wformat(__VA_ARGS__));
+
 #define LOG_DEBUG(...)                                                                                                 \
     dansandu::journey::logging::Logger::getGlobalInstance().log(dansandu::journey::Level::debug, __func__, __FILE__,   \
                                                                 __LINE__, 0, PRALINE_SOURCES_ROOT,                     \
