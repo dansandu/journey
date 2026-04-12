@@ -16,13 +16,24 @@ enum class Level
     critical,
 };
 
+struct DateTime
+{
+    short second;
+    short minute;
+    short hour;
+    short day;
+    short month;
+    int year;
+    std::string utcOffset;
+};
+
 struct LogEntry
 {
     Level level;
     int line;
     int column;
     std::thread::id threadId;
-    std::string timestamp;
+    DateTime timestamp;
     std::string relativeFilePath;
     std::string function;
     std::wstring message;
@@ -31,5 +42,7 @@ struct LogEntry
 PRALINE_EXPORT const char* toString(const Level level);
 
 PRALINE_EXPORT const char* toStringWithConsoleHighlight(const Level level);
+
+PRALINE_EXPORT DateTime getLocalDateTime();
 
 }
