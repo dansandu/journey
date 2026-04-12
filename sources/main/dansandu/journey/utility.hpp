@@ -28,8 +28,10 @@ auto wformat(const Arguments&... arguments)
         }
         else if constexpr (std::is_same_v<std::decay_t<T>, std::string_view>)
         {
-            const auto string = static_cast<std::string>(argument);
-            stream << string.c_str();
+            for (const auto c : argument)
+            {
+                stream << c;
+            }
         }
         else
         {
@@ -39,8 +41,6 @@ auto wformat(const Arguments&... arguments)
     (streamWriter(arguments), ...);
     return stream.str();
 }
-
-PRALINE_EXPORT std::string getLocalDateTime();
 
 PRALINE_EXPORT void writeToStandardOutput(const std::string_view string, const bool flush = false);
 

@@ -1,5 +1,6 @@
 #include "dansandu/journey/common.hpp"
 
+#include <ctime>
 #include <stdexcept>
 
 namespace dansandu::journey
@@ -45,6 +46,35 @@ const char* toStringWithConsoleHighlight(const Level level)
     default:
         throw std::logic_error("Unknown logging level");
     }
+}
+
+DateTime getLocalDateTime()
+{
+    auto timeInput = time_t{};
+    time(&timeInput);
+
+    auto timeOutput = tm{};
+
+#if defined(_WIN32)
+    localtime_s(&timeOutput, &timeInput);
+#elif defined(__linux__)
+    localtime_r(&timeInput, &timeOutput);
+#else
+#error "Unknown platform"
+#endif
+
+    char utcOffset[32];
+    strftime(utcOffset, std::size(utcOffset), "%z", &timeOutput);
+
+    return DateTime{
+        .second = static_cast<short>(timeOutput.tm_sec),
+        .minute = static_cast<short>(timeOutput.tm_min),
+        .hour = static_cast<short>(timeOutput.tm_hour),
+        .day = static_cast<short>(timeOutput.tm_mday),
+        .month = static_cast<short>(timeOutput.tm_mon + 1),
+        .year = timeOutput.tm_year + 1900,
+        .utcOffset = utcOffset,
+    };
 }
 
 }

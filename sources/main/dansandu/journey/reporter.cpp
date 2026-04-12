@@ -2,12 +2,13 @@
 #include "dansandu/journey/common.hpp"
 #include "dansandu/journey/utility.hpp"
 
+#include <format>
 #include <fstream>
 #include <memory>
 #include <mutex>
 
 using dansandu::journey::utility::getFileName;
-using dansandu::journey::utility::wformat;
+using dansandu::journey::utility::toWideString;
 using dansandu::journey::utility::writeToStandardError;
 using dansandu::journey::utility::writeToStandardOutput;
 
@@ -16,9 +17,12 @@ namespace dansandu::journey::reporter
 
 void standardOutputLogReporter(const LogEntry& logEntry)
 {
-    const auto message =
-        wformat(logEntry.timestamp, ' ', toStringWithConsoleHighlight(logEntry.level), ' ', logEntry.threadId, ' ',
-                getFileName(logEntry.relativeFilePath), '(', logEntry.line, ") ", logEntry.message, '\n');
+    const auto& time = logEntry.timestamp;
+
+    const auto message = std::format(
+        L"{}-{:02}-{:02} {:02}:{:02}:{:02} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour, time.minute,
+        time.second, toWideString(toStringWithConsoleHighlight(logEntry.level)), logEntry.threadId,
+        toWideString(getFileName(logEntry.relativeFilePath)), logEntry.line, logEntry.message);
 
     if (logEntry.level == Level::none)
     {
@@ -70,8 +74,12 @@ void LogFileReporter::operator()(const LogEntry& logEntry) const
         return;
     }
 
-    const auto message = wformat(logEntry.timestamp, ' ', toString(logEntry.level), ' ', logEntry.threadId, ' ',
-                                 logEntry.relativeFilePath, '(', logEntry.line, ") ", logEntry.message, '\n');
+    const auto& time = logEntry.timestamp;
+
+    const auto message =
+        std::format(L"{}-{:02}-{:02} {:02}:{:02}:{:02}{} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour,
+                    time.minute, time.second, toWideString(time.utcOffset), toWideString(toString(logEntry.level)),
+                    logEntry.threadId, toWideString(logEntry.relativeFilePath), logEntry.line, logEntry.message);
 
     const auto impl = static_cast<LogFileReporterImplementation*>(implementation_.get());
 

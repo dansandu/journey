@@ -12,7 +12,6 @@
 #include <vector>
 
 using dansandu::journey::utility::getFileName;
-using dansandu::journey::utility::getLocalDateTime;
 using dansandu::journey::utility::isSubpath;
 using dansandu::journey::utility::replaceBackSlashes;
 using dansandu::journey::utility::tryGetRelativePath;
@@ -242,14 +241,16 @@ void Logger::log(const Level level, const std::string_view function, const std::
 
     const auto isSubpath = tryGetRelativePath(file, sourcesRoot, relativePath);
 
-    const auto logEntry = LogEntry{.level = level,
-                                   .line = line,
-                                   .column = column,
-                                   .threadId = std::this_thread::get_id(),
-                                   .timestamp = getLocalDateTime(),
-                                   .relativeFilePath = isSubpath ? replaceBackSlashes(relativePath) : getFileName(file),
-                                   .function = static_cast<std::string>(function),
-                                   .message = static_cast<std::wstring>(message)};
+    const auto logEntry = LogEntry{
+        .level = level,
+        .line = line,
+        .column = column,
+        .threadId = std::this_thread::get_id(),
+        .timestamp = getLocalDateTime(),
+        .relativeFilePath = isSubpath ? replaceBackSlashes(relativePath) : getFileName(file),
+        .function = static_cast<std::string>(function),
+        .message = static_cast<std::wstring>(message),
+    };
 
     const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
 

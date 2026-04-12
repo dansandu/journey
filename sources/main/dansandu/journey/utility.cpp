@@ -1,6 +1,5 @@
 #include "dansandu/journey/utility.hpp"
 
-#include <ctime>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -11,27 +10,6 @@ namespace dansandu::journey::utility
 {
 
 static auto standardOutputMutex = std::mutex{};
-
-std::string getLocalDateTime()
-{
-    auto timeInput = time_t{};
-    time(&timeInput);
-
-    auto timeOutput = tm{};
-
-#if defined(_WIN32)
-    localtime_s(&timeOutput, &timeInput);
-#elif defined(__linux__)
-    localtime_r(&timeInput, &timeOutput);
-#else
-#error "Unknown platform"
-#endif
-
-    char buffer[64];
-    strftime(buffer, sizeof(buffer) / sizeof(*buffer), "%Y-%m-%d %H:%M:%S%z", &timeOutput);
-
-    return buffer;
-}
 
 void writeToStandardOutput(const std::string_view string, const bool flush)
 {
