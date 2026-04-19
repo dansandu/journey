@@ -4,15 +4,60 @@
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 namespace dansandu::journey::utility
 {
+
+template<typename T>
+concept HasToStreamMethod =
+    requires { static_cast<void (std::decay_t<T>::*)(std::ostream&) const>(&std::decay_t<T>::toStream); };
+
+template<typename T>
+concept HasToWideStreamMethod =
+    requires { static_cast<void (std::decay_t<T>::*)(std::wostream&) const>(&std::decay_t<T>::toStream); };
+
+template<typename T>
+concept HasToStringMethod =
+    requires { static_cast<std::string (std::decay_t<T>::*)() const>(&std::decay_t<T>::toString); };
+
+template<typename T>
+concept HasToWideStringMethod =
+    requires { static_cast<std::wstring (std::decay_t<T>::*)() const>(&std::decay_t<T>::toWideString); };
+
+template<typename T>
+concept HasToStreamFunction = requires(std::ostream stream, const T value) { stream << value; };
+
+template<typename T>
+concept HasToWideStreamFunction = requires(std::wostream stream, const T value) { stream << value; };
 
 template<typename... Arguments>
 auto format(const Arguments&... arguments)
 {
     auto stream = std::ostringstream{};
-    (stream << ... << arguments);
+
+    const auto writer = [&]<typename T>(const T& argument)
+    {
+        if constexpr (HasToStreamMethod<T>)
+        {
+            argument.toStream(stream);
+        }
+        else if constexpr (HasToStreamFunction<T>)
+        {
+            stream << argument;
+        }
+        else if constexpr (HasToStringMethod<T>)
+        {
+            stream << argument.toString();
+        }
+        else
+        {
+            static_assert(!"Cannot format type");
+        }
+    };
+
+    (writer(arguments), ...);
+
     return stream.str();
 }
 
@@ -20,7 +65,8 @@ template<typename... Arguments>
 auto wformat(const Arguments&... arguments)
 {
     auto stream = std::wostringstream{};
-    auto streamWriter = [&]<typename T>(const T& argument)
+
+    const auto writer = [&]<typename T>(const T& argument)
     {
         if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
         {
@@ -33,12 +79,31 @@ auto wformat(const Arguments&... arguments)
                 stream << c;
             }
         }
-        else
+        else if constexpr (HasToWideStreamMethod<T>)
+        {
+            argument.toStream(stream);
+        }
+        else if constexpr (HasToWideStreamFunction<T>)
         {
             stream << argument;
         }
+        else if constexpr (HasToWideStringMethod<T>)
+        {
+            stream << argument.toWideString();
+        }
+        else if constexpr (HasToStringMethod<T>)
+        {
+            const auto string = argument.toString();
+            stream << string.c_str();
+        }
+        else
+        {
+            static_assert(!"Cannot format type");
+        }
     };
-    (streamWriter(arguments), ...);
+
+    (writer(arguments), ...);
+
     return stream.str();
 }
 
