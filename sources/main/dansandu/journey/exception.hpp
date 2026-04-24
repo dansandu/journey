@@ -1,7 +1,11 @@
 #pragma once
 
+#include "dansandu/journey/utility.hpp"
+
+#include <stacktrace>
 #include <stdexcept>
 #include <string>
+#include <thread>
 
 namespace dansandu::journey::exception
 {
@@ -28,3 +32,13 @@ private:
 };
 
 }
+
+#define THROW(exception, ...)                                                                                          \
+    throw exception{dansandu::journey::utility::format(                                                                \
+        "'", #exception, "' exception in thread '", std::this_thread::get_id(),                                        \
+        "': ", dansandu::journey::utility::format(__VA_ARGS__), "\n", std::stacktrace::current())};
+
+#define WTHROW(exception, ...)                                                                                         \
+    throw exception{dansandu::journey::utility::wformat(                                                               \
+        "'", #exception, "' exception in thread '", std::this_thread::get_id(),                                        \
+        "': ", dansandu::journey::utility::wformat(__VA_ARGS__), "\n", std::to_string(std::stacktrace::current()))};
