@@ -241,12 +241,15 @@ void Logger::log(const Level level, const std::string_view function, const std::
 
     const auto isSubpath = tryGetRelativePath(file, sourcesRoot, relativePath);
 
+    auto threadIdStream = std::ostringstream{};
+    threadIdStream << std::this_thread::get_id();
+
     const auto logEntry = LogEntry{
         .level = level,
         .line = line,
         .column = column,
-        .threadId = std::this_thread::get_id(),
         .timestamp = getLocalDateTime(),
+        .threadId = threadIdStream.str(),
         .relativeFilePath = isSubpath ? replaceBackSlashes(relativePath) : getFileName(file),
         .function = static_cast<std::string>(function),
         .message = static_cast<std::wstring>(message),

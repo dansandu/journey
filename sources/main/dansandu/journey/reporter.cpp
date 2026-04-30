@@ -6,6 +6,7 @@
 #include <fstream>
 #include <memory>
 #include <mutex>
+#include <string>
 
 using dansandu::journey::utility::getFileName;
 using dansandu::journey::utility::toWideString;
@@ -21,7 +22,7 @@ void standardOutputLogReporter(const LogEntry& logEntry)
 
     const auto message = std::format(
         L"{}-{:02}-{:02} {:02}:{:02}:{:02} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour, time.minute,
-        time.second, toWideString(toStringWithConsoleHighlight(logEntry.level)), logEntry.threadId,
+        time.second, toWideString(toStringWithConsoleHighlight(logEntry.level)), toWideString(logEntry.threadId),
         toWideString(getFileName(logEntry.relativeFilePath)), logEntry.line, logEntry.message);
 
     if (logEntry.level == Level::none)
@@ -76,10 +77,10 @@ void LogFileReporter::operator()(const LogEntry& logEntry) const
 
     const auto& time = logEntry.timestamp;
 
-    const auto message =
-        std::format(L"{}-{:02}-{:02} {:02}:{:02}:{:02}{} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour,
-                    time.minute, time.second, toWideString(time.utcOffset), toWideString(toString(logEntry.level)),
-                    logEntry.threadId, toWideString(logEntry.relativeFilePath), logEntry.line, logEntry.message);
+    const auto message = std::format(L"{}-{:02}-{:02} {:02}:{:02}:{:02}{} {} {} {}({}) {}\n", time.year, time.month,
+                                     time.day, time.hour, time.minute, time.second, toWideString(time.utcOffset),
+                                     toWideString(toString(logEntry.level)), toWideString(logEntry.threadId),
+                                     toWideString(logEntry.relativeFilePath), logEntry.line, logEntry.message);
 
     const auto impl = static_cast<LogFileReporterImplementation*>(implementation_.get());
 

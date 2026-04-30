@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <thread>
 
 namespace dansandu::journey
 {
@@ -32,8 +31,8 @@ struct LogEntry
     Level level;
     int line;
     int column;
-    std::thread::id threadId;
     DateTime timestamp;
+    std::string threadId;
     std::string relativeFilePath;
     std::string function;
     std::wstring message;
