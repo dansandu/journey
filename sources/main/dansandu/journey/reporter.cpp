@@ -7,6 +7,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <vector>
 
 using dansandu::journey::utility::getFileName;
 using dansandu::journey::utility::toWideString;
@@ -18,17 +19,17 @@ namespace dansandu::journey::reporter
 
 void standardOutputLogReporter(const LogEntry& logEntry)
 {
+    if (logEntry.level == Level::none)
+    {
+        return;
+    }
+
     const auto& time = logEntry.timestamp;
 
     const auto message = std::format(
         L"{}-{:02}-{:02} {:02}:{:02}:{:02} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour, time.minute,
         time.second, toWideString(toStringWithConsoleHighlight(logEntry.level)), toWideString(logEntry.threadId),
         toWideString(getFileName(logEntry.relativeFilePath)), logEntry.line, logEntry.message);
-
-    if (logEntry.level == Level::none)
-    {
-        return;
-    }
 
     const auto flush = true;
 
@@ -58,16 +59,6 @@ LogFileReporter::LogFileReporter(const std::string& filePath)
 {
 }
 
-LogFileReporter::LogFileReporter(LogFileReporter&& other) noexcept : implementation_{other.implementation_}
-{
-}
-
-LogFileReporter& LogFileReporter::operator=(LogFileReporter&& other) noexcept
-{
-    implementation_ = other.implementation_;
-    return *this;
-}
-
 void LogFileReporter::operator()(const LogEntry& logEntry) const
 {
     if (logEntry.level == Level::none)
@@ -88,6 +79,58 @@ void LogFileReporter::operator()(const LogEntry& logEntry) const
 
     impl->logFile << message;
     impl->logFile.flush();
+}
+
+struct InMemoryReporterImplementation
+{
+    InMemoryReporterImplementation() : isEnabled{true}
+    {
+    }
+
+    bool isEnabled;
+    std::vector<LogEntry> loggedEntries;
+    std::mutex mutex;
+};
+
+InMemoryReporter::InMemoryReporter() : implementation_{std::make_shared<InMemoryReporterImplementation>()}
+{
+}
+
+void InMemoryReporter::operator()(const LogEntry& logEntry) const
+{
+    if (logEntry.level == Level::none)
+    {
+        return;
+    }
+
+    const auto impl = static_cast<InMemoryReporterImplementation*>(implementation_.get());
+
+    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
+
+    if (!impl->isEnabled)
+    {
+        return;
+    }
+
+    impl->loggedEntries.push_back(logEntry);
+}
+
+void InMemoryReporter::enable(const bool isEnabled) const
+{
+    const auto impl = static_cast<InMemoryReporterImplementation*>(implementation_.get());
+
+    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
+
+    impl->isEnabled = isEnabled;
+}
+
+std::vector<LogEntry> InMemoryReporter::getLoggedEntries() const
+{
+    const auto impl = static_cast<InMemoryReporterImplementation*>(implementation_.get());
+
+    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
+
+    return impl->loggedEntries;
 }
 
 }

@@ -22,11 +22,11 @@ public:
 
     Logger(const Logger& other) = default;
 
-    Logger(Logger&& other) noexcept;
+    Logger(Logger&& other) noexcept = default;
 
     Logger& operator=(const Logger& other) = default;
 
-    Logger& operator=(Logger&& other) noexcept;
+    Logger& operator=(Logger&& other) noexcept = default;
 
     void addReporter(const std::wstring_view name, const Level level,
                      std::function<void(const LogEntry&)> consumer) const;
@@ -40,8 +40,6 @@ public:
     void setLevel(const Level level) const;
 
     Level getLevel() const;
-
-    Level getHighestLevelLogged() const;
 
     void setRelativeFilePathFilter(const std::string_view filter) const;
 
