@@ -4,6 +4,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace dansandu::journey::reporter
 {
@@ -17,13 +18,36 @@ public:
 
     LogFileReporter(const LogFileReporter& other) = default;
 
-    LogFileReporter(LogFileReporter&& other) noexcept;
+    LogFileReporter(LogFileReporter&& other) noexcept = default;
 
     LogFileReporter& operator=(const LogFileReporter& other) = default;
 
-    LogFileReporter& operator=(LogFileReporter&& other) noexcept;
+    LogFileReporter& operator=(LogFileReporter&& other) noexcept = default;
 
     void operator()(const LogEntry& logEntry) const;
+
+private:
+    std::shared_ptr<void> implementation_;
+};
+
+class PRALINE_EXPORT InMemoryReporter
+{
+public:
+    InMemoryReporter();
+
+    InMemoryReporter(const InMemoryReporter& other) = default;
+
+    InMemoryReporter(InMemoryReporter&& other) noexcept = default;
+
+    InMemoryReporter& operator=(const InMemoryReporter& other) = default;
+
+    InMemoryReporter& operator=(InMemoryReporter&& other) noexcept = default;
+
+    void operator()(const LogEntry& logEntry) const;
+
+    void enable(const bool isEnabled) const;
+
+    std::vector<LogEntry> getLoggedEntries() const;
 
 private:
     std::shared_ptr<void> implementation_;

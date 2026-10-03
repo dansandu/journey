@@ -39,8 +39,7 @@ struct Reporter
 
 struct LoggerImplementation
 {
-    explicit LoggerImplementation(const std::wstring_view name, const Level level)
-        : name{name}, level{level}, highestLevelLogged{Level::none}
+    explicit LoggerImplementation(const std::wstring_view name, const Level level) : name{name}, level{level}
     {
     }
 
@@ -48,19 +47,14 @@ struct LoggerImplementation
     {
         const auto lock = std::lock_guard<std::mutex>{mutex};
 
-        if (logEntry.level > highestLevelLogged)
-        {
-            highestLevelLogged = logEntry.level;
-        }
-
         if (logEntry.level != Level::none && logEntry.level >= level &&
             isSubpath(logEntry.relativeFilePath, relativeFilePathFilter))
         {
-            for (const auto& repoter : reporters)
+            for (const auto& reporter : reporters)
             {
-                if (logEntry.level >= repoter.level)
+                if (logEntry.level >= reporter.level)
                 {
-                    repoter.consumer(logEntry);
+                    reporter.consumer(logEntry);
                 }
             }
 
@@ -74,7 +68,6 @@ struct LoggerImplementation
     const std::wstring name;
 
     Level level;
-    Level highestLevelLogged;
     std::string relativeFilePathFilter;
     std::vector<Reporter> reporters;
     std::vector<std::shared_ptr<LoggerImplementation>> children;
@@ -94,16 +87,6 @@ Logger::Logger(const std::wstring_view name) : Logger{name, defaultLoggingLevel}
 Logger::Logger(const std::wstring_view name, const Level level)
     : implementation_{std::make_shared<LoggerImplementation>(name, level)}
 {
-}
-
-Logger::Logger(Logger&& other) noexcept : implementation_{other.implementation_}
-{
-}
-
-Logger& Logger::operator=(Logger&& other) noexcept
-{
-    implementation_ = other.implementation_;
-    return *this;
 }
 
 void Logger::addReporter(const std::wstring_view name, const Level level,
@@ -200,15 +183,6 @@ Level Logger::getLevel() const
     return impl->level;
 }
 
-Level Logger::getHighestLevelLogged() const
-{
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
-
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    return impl->highestLevelLogged;
-}
-
 void Logger::setRelativeFilePathFilter(const std::string_view filter) const
 {
     const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
@@ -230,6 +204,8 @@ std::string Logger::getRelativeFilePathFilter() const
 const std::wstring& Logger::getName() const
 {
     const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+
+    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
 
     return impl->name;
 }
