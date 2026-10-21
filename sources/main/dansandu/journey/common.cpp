@@ -1,4 +1,5 @@
 #include "dansandu/journey/common.hpp"
+#include "dansandu/journey/exception.hpp"
 
 #include <ctime>
 #include <stdexcept>
@@ -23,7 +24,7 @@ const char* toString(const Level level)
     case Level::critical:
         return "CRITICAL";
     default:
-        throw std::logic_error("Unknown logging level");
+        THROW(std::logic_error, "Unknown logging level");
     }
 }
 
@@ -44,7 +45,7 @@ const char* toStringWithConsoleHighlight(const Level level)
     case Level::critical:
         return "\x1B[31mCRITICAL\x1B[0m";
     default:
-        throw std::logic_error("Unknown logging level");
+        THROW(std::logic_error, "Unknown logging level");
     }
 }
 

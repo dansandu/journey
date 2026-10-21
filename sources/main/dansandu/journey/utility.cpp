@@ -6,6 +6,10 @@
 #include <optional>
 #include <sstream>
 
+#if defined(__GNUG__)
+#include <cxxabi.h>
+#endif
+
 namespace dansandu::journey::utility
 {
 
@@ -202,6 +206,43 @@ std::optional<std::string> getEnvironmentVariable(const std::string& variable)
 #else
 #error "Unknown platform"
 #endif
+}
+
+bool tryDemangle(const std::string& symbol, const bool includeNamespace, std::string& output)
+{
+#if defined(__GNUG__)
+    char* const buffer = nullptr;
+    size_t* const length = nullptr;
+    auto status = -4;
+    const auto demangled =
+        std::unique_ptr<char, void (*)(void*)>{abi::__cxa_demangle(symbol.c_str(), buffer, length, &status), std::free};
+    if (status != 0)
+    {
+        return false;
+    }
+    output = demangled.get();
+#elif defined(_MSC_VER)
+    const auto classPrefix = std::string_view{"class "};
+    const auto structPrefix = std::string_view{"struct "};
+    if (symbol.starts_with(classPrefix))
+    {
+        output = std::string{symbol.cbegin() + classPrefix.size(), symbol.cend()};
+    }
+    else if (symbol.starts_with(structPrefix))
+    {
+        output = std::string{symbol.cbegin() + structPrefix.size(), symbol.cend()};
+    }
+#else
+#error "Unkown platform"
+#endif
+    if (!includeNamespace)
+    {
+        if (const auto colonIndex = output.rfind(':'); colonIndex != std::string::npos)
+        {
+            output = output.substr(colonIndex + 1);
+        }
+    }
+    return true;
 }
 
 }

@@ -1,4 +1,5 @@
 #include "dansandu/journey/logging.hpp"
+#include "dansandu/journey/exception.hpp"
 #include "dansandu/journey/utility.hpp"
 
 #include <algorithm>
@@ -105,7 +106,7 @@ void Logger::addReporter(const std::wstring_view name, const Level level,
     }
     else
     {
-        throw std::logic_error("A reporter with the same name is already registered");
+        THROW(std::logic_error, "A reporter with the same name is already registered");
     }
 }
 
@@ -132,7 +133,7 @@ void Logger::addChildLogger(const Logger& other) const
 
     if (impl == otherImpl)
     {
-        throw std::logic_error("Cannot add self as a child logger");
+        THROW(std::logic_error, "Cannot add self as a child logger");
     }
 
     const auto lock = std::lock_guard<std::mutex>{impl->mutex};
@@ -146,7 +147,7 @@ void Logger::addChildLogger(const Logger& other) const
     }
     else
     {
-        throw std::logic_error("A child logger with the same name is already registered");
+        THROW(std::logic_error, "A child logger with the same name is already registered");
     }
 }
 
