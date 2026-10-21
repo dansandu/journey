@@ -132,4 +132,6 @@ PRALINE_EXPORT std::string replaceBackSlashes(const std::string_view path);
 
 PRALINE_EXPORT std::optional<std::string> getEnvironmentVariable(const std::string& variable);
 
+PRALINE_EXPORT bool tryDemangle(const std::string& symbol, const bool includeNamespace, std::string& output);
+
 }
