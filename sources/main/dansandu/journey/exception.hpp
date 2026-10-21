@@ -31,14 +31,18 @@ private:
     std::wstring message_;
 };
 
+PRALINE_EXPORT std::string formatException(const std::string& exception, const std::string& message,
+                                           std::stacktrace stacktrace = std::stacktrace::current());
+
+PRALINE_EXPORT std::wstring wformatException(const std::string& exception, const std::wstring& message,
+                                             std::stacktrace stacktrace = std::stacktrace::current());
+
 }
 
-#define THROW(exception, ...)                                                                                          \
-    throw exception{dansandu::journey::utility::format(                                                                \
-        "'", #exception, "' exception in thread '", std::this_thread::get_id(),                                        \
-        "': ", dansandu::journey::utility::format(__VA_ARGS__), "\n", std::stacktrace::current())};
+#define THROW(ExceptionType, ...)                                                                                      \
+    throw ExceptionType{::dansandu::journey::exception::formatException(                                               \
+        #ExceptionType, ::dansandu::journey::utility::format(__VA_ARGS__))};
 
-#define WTHROW(exception, ...)                                                                                         \
-    throw exception{dansandu::journey::utility::wformat(                                                               \
-        "'", #exception, "' exception in thread '", std::this_thread::get_id(),                                        \
-        "': ", dansandu::journey::utility::wformat(__VA_ARGS__), "\n", std::to_string(std::stacktrace::current()))};
+#define WTHROW(ExceptionType, ...)                                                                                     \
+    throw ExceptionType{::dansandu::journey::exception::wformatException(                                              \
+        #ExceptionType, ::dansandu::journey::utility::wformat(__VA_ARGS__))};
