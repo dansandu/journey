@@ -61,11 +61,17 @@ private:
 };
 
 #define THROW(ExceptionType, ...)                                                                                      \
-    throw ExceptionType{::dansandu::journey::exception::formatException(                                               \
-        #ExceptionType, ::dansandu::journey::utility::format(__VA_ARGS__))};
+    throw ExceptionType                                                                                                \
+    {                                                                                                                  \
+        ::dansandu::journey::exception::formatException(#ExceptionType,                                                \
+                                                        ::dansandu::journey::utility::format(__VA_ARGS__))             \
+    }
 
 #define WTHROW(ExceptionType, ...)                                                                                     \
-    throw ExceptionType{::dansandu::journey::exception::wformatException(                                              \
-        #ExceptionType, ::dansandu::journey::utility::wformat(__VA_ARGS__))};
+    throw ExceptionType                                                                                                \
+    {                                                                                                                  \
+        ::dansandu::journey::exception::wformatException(#ExceptionType,                                               \
+                                                         ::dansandu::journey::utility::wformat(__VA_ARGS__))           \
+    }
 
 }
