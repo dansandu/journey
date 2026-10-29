@@ -9,30 +9,6 @@
 namespace dansandu::journey::exception
 {
 
-template<typename Exception>
-std::string getExceptionTypeName(const bool includeNamespace)
-{
-    const auto mangled = typeid(Exception).name();
-    auto demangled = std::string{mangled};
-    if (::dansandu::journey::utility::tryDemangle(mangled, includeNamespace, demangled))
-    {
-        return demangled;
-    }
-    return "<Unknown>";
-}
-
-template<typename Exception>
-std::string getExceptionTypeName(const bool includeNamespace, const Exception& exception)
-{
-    const auto mangled = typeid(exception).name();
-    auto demangled = std::string{mangled};
-    if (::dansandu::journey::utility::tryDemangle(mangled, includeNamespace, demangled))
-    {
-        return demangled;
-    }
-    return "<Unknown>";
-}
-
 PRALINE_EXPORT std::string formatException(const std::string& exception, const std::string& message,
                                            std::stacktrace stacktrace = std::stacktrace::current());
 
