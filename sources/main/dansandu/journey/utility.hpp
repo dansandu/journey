@@ -134,4 +134,28 @@ PRALINE_EXPORT std::optional<std::string> getEnvironmentVariable(const std::stri
 
 PRALINE_EXPORT bool tryDemangle(const std::string& symbol, const bool includeNamespace, std::string& output);
 
+template<typename Type>
+std::string getTypeName(const bool includeNamespace)
+{
+    const auto mangled = typeid(Type).name();
+    auto demangled = std::string{mangled};
+    if (::dansandu::journey::utility::tryDemangle(mangled, includeNamespace, demangled))
+    {
+        return demangled;
+    }
+    return "<Unknown>";
+}
+
+template<typename Type>
+std::string getTypeName(const bool includeNamespace, const Type& type)
+{
+    const auto mangled = typeid(type).name();
+    auto demangled = std::string{mangled};
+    if (::dansandu::journey::utility::tryDemangle(mangled, includeNamespace, demangled))
+    {
+        return demangled;
+    }
+    return "<Unknown>";
+}
+
 }
