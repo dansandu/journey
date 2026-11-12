@@ -10,7 +10,6 @@
 #include <vector>
 
 using dansandu::journey::utility::getFileName;
-using dansandu::journey::utility::toWideString;
 using dansandu::journey::utility::writeToStandardError;
 using dansandu::journey::utility::writeToStandardOutput;
 
@@ -26,10 +25,10 @@ void standardOutputLogReporter(const LogEntry& logEntry)
 
     const auto& time = logEntry.timestamp;
 
-    const auto message = std::format(
-        L"{}-{:02}-{:02} {:02}:{:02}:{:02} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour, time.minute,
-        time.second, toWideString(toStringWithConsoleHighlight(logEntry.level)), toWideString(logEntry.threadId),
-        toWideString(getFileName(logEntry.relativeFilePath)), logEntry.line, logEntry.message);
+    const auto message =
+        std::format("{}-{:02}-{:02} {:02}:{:02}:{:02} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour,
+                    time.minute, time.second, toStringWithConsoleHighlight(logEntry.level), logEntry.threadId,
+                    getFileName(logEntry.relativeFilePath), logEntry.line, logEntry.message);
 
     const auto flush = true;
 
@@ -50,7 +49,7 @@ struct LogFileReporterImplementation
     {
     }
 
-    std::wofstream logFile;
+    std::ofstream logFile;
     std::mutex mutex;
 };
 
@@ -68,10 +67,10 @@ void LogFileReporter::operator()(const LogEntry& logEntry) const
 
     const auto& time = logEntry.timestamp;
 
-    const auto message = std::format(L"{}-{:02}-{:02} {:02}:{:02}:{:02}{} {} {} {}({}) {}\n", time.year, time.month,
-                                     time.day, time.hour, time.minute, time.second, toWideString(time.utcOffset),
-                                     toWideString(toString(logEntry.level)), toWideString(logEntry.threadId),
-                                     toWideString(logEntry.relativeFilePath), logEntry.line, logEntry.message);
+    const auto message =
+        std::format("{}-{:02}-{:02} {:02}:{:02}:{:02}{} {} {} {}({}) {}\n", time.year, time.month, time.day, time.hour,
+                    time.minute, time.second, time.utcOffset, toString(logEntry.level), logEntry.threadId,
+                    logEntry.relativeFilePath, logEntry.line, logEntry.message);
 
     const auto impl = static_cast<LogFileReporterImplementation*>(implementation_.get());
 

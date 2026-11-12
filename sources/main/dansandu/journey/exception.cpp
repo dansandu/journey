@@ -11,10 +11,4 @@ std::string formatException(const std::string& exception, const std::string& mes
                                                 "': ", message, "\n", stacktrace);
 }
 
-std::wstring wformatException(const std::string& exception, const std::wstring& message, std::stacktrace stacktrace)
-{
-    return ::dansandu::journey::utility::wformat("'", exception, "' thrown in thread '", std::this_thread::get_id(),
-                                                 "': ", message, "\n", std::to_string(stacktrace));
-}
-
 }

@@ -30,12 +30,11 @@ struct LogEntry
 {
     Level level;
     int line;
-    int column;
     DateTime timestamp;
     std::string threadId;
     std::string relativeFilePath;
     std::string function;
-    std::wstring message;
+    std::string message;
 };
 
 PRALINE_EXPORT const char* toString(const Level level);

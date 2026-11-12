@@ -25,16 +25,6 @@ void writeToStandardOutput(const std::string_view string, const bool flush)
     }
 }
 
-void writeToStandardOutput(const std::wstring_view string, const bool flush)
-{
-    const auto lock = std::lock_guard<std::mutex>{standardOutputMutex};
-    std::wcout << string;
-    if (flush)
-    {
-        std::wcout.flush();
-    }
-}
-
 void writeToStandardError(const std::string_view string, const bool flush)
 {
     const auto lock = std::lock_guard<std::mutex>{standardOutputMutex};
@@ -43,33 +33,6 @@ void writeToStandardError(const std::string_view string, const bool flush)
     {
         std::cerr.flush();
     }
-}
-
-void writeToStandardError(const std::wstring_view string, const bool flush)
-{
-    const auto lock = std::lock_guard<std::mutex>{standardOutputMutex};
-    std::wcerr << string;
-    if (flush)
-    {
-        std::wcerr.flush();
-    }
-}
-
-std::wstring toWideString(const char* const string)
-{
-    auto stream = std::wostringstream{};
-    stream << string;
-    return stream.str();
-}
-
-std::wstring toWideString(const std::string& string)
-{
-    return toWideString(string.c_str());
-}
-
-std::wstring toWideString(std::wstring string)
-{
-    return string;
 }
 
 namespace
