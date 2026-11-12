@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -8,6 +9,18 @@
 
 namespace dansandu::journey::utility
 {
+
+// Used to pass strings as template parameters.
+template<std::size_t N>
+struct FixedString
+{
+    constexpr FixedString(const char (&string)[N]) noexcept
+    {
+        std::copy_n(string, N, data);
+    }
+
+    char data[N];
+};
 
 template<typename T>
 concept HasToStreamMethod =
