@@ -12,6 +12,7 @@
 #include <thread>
 #include <vector>
 
+using dansandu::journey::utility::format;
 using dansandu::journey::utility::getFileName;
 using dansandu::journey::utility::isSubpath;
 using dansandu::journey::utility::replaceBackSlashes;
@@ -33,18 +34,18 @@ constexpr auto defaultLoggingLevel = Level::info;
 
 struct Reporter
 {
-    std::wstring name;
+    std::string name;
     Level level;
     std::function<void(const LogEntry&)> consumer;
 };
 
-struct LoggerImplementation
+struct Logger::Implementation
 {
-    explicit LoggerImplementation(const std::wstring_view name, const Level level) : name{name}, level{level}
+    explicit Implementation(const std::string_view name, const Level level) : name{name}, level{level}
     {
     }
 
-    void log(const LogEntry& logEntry)
+    void log(const LogEntry& logEntry) noexcept
     {
         const auto lock = std::lock_guard<std::mutex>{mutex};
 
@@ -58,51 +59,43 @@ struct LoggerImplementation
                     reporter.consumer(logEntry);
                 }
             }
-
-            for (auto& child : children)
-            {
-                child->log(logEntry);
-            }
         }
     }
 
-    const std::wstring name;
+    const std::string name;
 
     Level level;
     std::string relativeFilePathFilter;
     std::vector<Reporter> reporters;
-    std::vector<std::shared_ptr<LoggerImplementation>> children;
     std::mutex mutex;
 };
 
 const Logger& Logger::getGlobalInstance()
 {
-    static const auto logger = Logger{L"global"};
+    static const auto logger = Logger{"global"};
     return logger;
 }
 
-Logger::Logger(const std::wstring_view name) : Logger{name, defaultLoggingLevel}
+Logger::Logger(const std::string_view name) : Logger{name, defaultLoggingLevel}
 {
 }
 
-Logger::Logger(const std::wstring_view name, const Level level)
-    : implementation_{std::make_shared<LoggerImplementation>(name, level)}
+Logger::Logger(const std::string_view name, const Level level)
+    : implementation_{std::make_shared<Implementation>(name, level)}
 {
 }
 
-void Logger::addReporter(const std::wstring_view name, const Level level,
+void Logger::addReporter(const std::string_view name, const Level level,
                          std::function<void(const LogEntry&)> consumer) const
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
+    const auto position = std::find_if(implementation_->reporters.cbegin(), implementation_->reporters.cend(),
+                                       [&](const auto& r) { return r.name == name; });
 
-    const auto position =
-        std::find_if(impl->reporters.cbegin(), impl->reporters.cend(), [&](const auto& r) { return r.name == name; });
-
-    if (position == impl->reporters.cend())
+    if (position == implementation_->reporters.cend())
     {
-        impl->reporters.push_back({static_cast<std::wstring>(name), level, std::move(consumer)});
+        implementation_->reporters.push_back({static_cast<std::string>(name), level, std::move(consumer)});
     }
     else
     {
@@ -110,131 +103,72 @@ void Logger::addReporter(const std::wstring_view name, const Level level,
     }
 }
 
-void Logger::removeReporter(const std::wstring_view name) const
+void Logger::removeReporter(const std::string_view name) const noexcept
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
+    const auto position = std::find_if(implementation_->reporters.cbegin(), implementation_->reporters.cend(),
+                                       [&](const auto& r) { return r.name == name; });
 
-    const auto position =
-        std::find_if(impl->reporters.cbegin(), impl->reporters.cend(), [&](const auto& r) { return r.name == name; });
-
-    if (position != impl->reporters.cend())
+    if (position != implementation_->reporters.cend())
     {
-        impl->reporters.erase(position);
+        implementation_->reporters.erase(position);
     }
 }
 
-void Logger::addChildLogger(const Logger& other) const
+void Logger::setLevel(const Level level) const noexcept
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto otherImpl = static_cast<LoggerImplementation*>(other.implementation_.get());
-
-    if (impl == otherImpl)
-    {
-        THROW(std::logic_error, "Cannot add self as a child logger");
-    }
-
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    const auto position = std::find_if(impl->children.cbegin(), impl->children.cend(), [&](const auto& child)
-                                       { return child.get() == otherImpl || child->name == otherImpl->name; });
-
-    if (position == impl->children.cend())
-    {
-        impl->children.push_back(std::static_pointer_cast<LoggerImplementation>(other.implementation_));
-    }
-    else
-    {
-        THROW(std::logic_error, "A child logger with the same name is already registered");
-    }
+    implementation_->level = level;
 }
 
-void Logger::removeChildLogger(const std::wstring_view name) const
+Level Logger::getLevel() const noexcept
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    const auto position = std::find_if(impl->children.cbegin(), impl->children.cend(),
-                                       [&](const auto& child) { return child->name == name; });
-
-    if (position != impl->children.cend())
-    {
-        impl->children.erase(position);
-    }
+    return implementation_->level;
 }
 
-void Logger::setLevel(const Level level) const
+void Logger::setRelativeFilePathFilter(const std::string_view filter) const noexcept
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    impl->level = level;
+    implementation_->relativeFilePathFilter = filter;
 }
 
-Level Logger::getLevel() const
+std::string Logger::getRelativeFilePathFilter() const noexcept
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    return impl->level;
+    return implementation_->relativeFilePathFilter;
 }
 
-void Logger::setRelativeFilePathFilter(const std::string_view filter) const
+const std::string& Logger::getName() const noexcept
 {
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
+    const auto lock = std::lock_guard<std::mutex>{implementation_->mutex};
 
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    impl->relativeFilePathFilter = filter;
-}
-
-std::string Logger::getRelativeFilePathFilter() const
-{
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
-
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    return impl->relativeFilePathFilter;
-}
-
-const std::wstring& Logger::getName() const
-{
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
-
-    const auto lock = std::lock_guard<std::mutex>{impl->mutex};
-
-    return impl->name;
+    return implementation_->name;
 }
 
 void Logger::log(const Level level, const std::string_view function, const std::string_view file, const int line,
-                 const int column, const std::string_view sourcesRoot, const std::wstring_view message) const
+                 const std::string_view sourcesRoot, const std::string_view message) const noexcept
 {
     auto relativePath = std::string{};
 
     const auto isSubpath = tryGetRelativePath(file, sourcesRoot, relativePath);
 
-    auto threadIdStream = std::ostringstream{};
-    threadIdStream << std::this_thread::get_id();
-
     const auto logEntry = LogEntry{
         .level = level,
         .line = line,
-        .column = column,
         .timestamp = getLocalDateTime(),
-        .threadId = threadIdStream.str(),
+        .threadId = format(std::this_thread::get_id()),
         .relativeFilePath = isSubpath ? replaceBackSlashes(relativePath) : getFileName(file),
         .function = static_cast<std::string>(function),
-        .message = static_cast<std::wstring>(message),
+        .message = static_cast<std::string>(message),
     };
 
-    const auto impl = static_cast<LoggerImplementation*>(implementation_.get());
-
-    impl->log(logEntry);
+    implementation_->log(logEntry);
 }
 
 }
