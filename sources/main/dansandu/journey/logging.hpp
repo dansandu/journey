@@ -52,6 +52,26 @@ private:
     std::shared_ptr<Implementation> implementation_;
 };
 
+class ReporterGuard
+{
+public:
+    ReporterGuard(const Logger& logger, const std::string& reporterName, const Level reporterLevel,
+                  std::function<void(const LogEntry&)> reporter)
+        : logger_{logger}, reporterName_{reporterName}
+    {
+        logger_.addReporter(reporterName_, reporterLevel, std::move(reporter));
+    }
+
+    ~ReporterGuard() noexcept
+    {
+        logger_.removeReporter(reporterName_);
+    }
+
+private:
+    Logger logger_;
+    std::string reporterName_;
+};
+
 }
 
 #define LOG_WITH_LEVEL(level, ...)                                                                                     \
