@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <type_traits>
+#include <typeinfo>
 
 namespace dansandu::journey::utility
 {
@@ -83,24 +84,53 @@ PRALINE_EXPORT bool tryDemangle(const std::string& symbol, const bool includeNam
 template<typename Type>
 std::string getTypeName(const bool includeNamespace)
 {
-    const auto mangled = typeid(Type).name();
-    auto demangled = std::string{mangled};
-    if (::dansandu::journey::utility::tryDemangle(mangled, includeNamespace, demangled))
+    if constexpr (std::is_same_v<Type, std::type_info>)
     {
-        return demangled;
+        if (includeNamespace)
+        {
+            return "std::type_info";
+        }
+        else
+        {
+            return "type_info";
+        }
     }
-    return "<Unknown>";
+    else
+    {
+        const auto mangled = typeid(Type).name();
+
+        auto demangled = std::string{};
+
+        if (tryDemangle(mangled, includeNamespace, demangled))
+        {
+            return demangled;
+        }
+
+        return "<Unknown>";
+    }
 }
 
 template<typename Type>
 std::string getTypeName(const bool includeNamespace, const Type& type)
 {
-    const auto mangled = typeid(type).name();
-    auto demangled = std::string{mangled};
-    if (::dansandu::journey::utility::tryDemangle(mangled, includeNamespace, demangled))
+    auto mangled = std::string{};
+
+    if constexpr (std::is_same_v<Type, std::type_info>)
+    {
+        mangled = type.name();
+    }
+    else
+    {
+        mangled = typeid(type).name();
+    }
+
+    auto demangled = std::string{};
+
+    if (tryDemangle(mangled, includeNamespace, demangled))
     {
         return demangled;
     }
+
     return "<Unknown>";
 }
 
